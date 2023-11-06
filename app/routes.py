@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Path
 from sqlalchemy.orm import Session
-from schemas import PelangganSchema, PemesananSchema, Request, Response
+from schema import PelangganSchema, PemesananSchema, PelangganListSchema, PemesananListSchema
 import crud
 from config import SessionLocal
 
@@ -13,54 +13,65 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/pelanggan/create")
-async def create_pelanggan_service(request: Request[PelangganSchema], db: Session = Depends(get_db)):
-    pelanggan = crud.create_pelanggan(db, pelanggan=request.parameter)
-    return Response[PelangganSchema](status="Ok", code="200", message="Pelanggan created successfully", result=pelanggan)
 
-@router.get("/pelanggan/{pelanggan_id}")
-async def get_pelanggan_service(pelanggan_id: int, db: Session = Depends(get_db)):
+#PELANGGAN
+@router.get("/pelanggan/", response_model=PelangganListSchema)
+async def get_all_pelanggan(db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
+    pelanggan = crud.get_all_pelanggan(db, skip, limit)
+    return {"data": pelanggan}
+
+@router.get("/pelanggan/{pelanggan_id}", response_model=PelangganSchema)
+async def get_pelanggan(db: Session = Depends(get_db), pelanggan_id: int = Path(..., title="Pelanggan ID")):
     pelanggan = crud.get_pelanggan(db, pelanggan_id)
-    if not pelanggan:
+    if pelanggan is None:
         raise HTTPException(status_code=404, detail="Pelanggan not found")
-    return Response[PelangganSchema](status="Ok", code="200", message="Success fetch data", result=pelanggan)
+    return pelanggan
 
-@router.patch("/pelanggan/update/{pelanggan_id}")
-async def update_pelanggan_service(pelanggan_id: int, request: Request[PelangganSchema], db: Session = Depends(get_db)):
-    pelanggan = crud.update_pelanggan(db, pelanggan_id, nama=request.parameter.nama, alamat=request.parameter.alamat, telepon=request.parameter.telepon)
-    if not pelanggan:
+@router.post("/pelanggan/", response_model=PelangganSchema)
+async def create_pelanggan(pelanggan: PelangganSchema, db: Session = Depends(get_db)):
+    return crud.create_pelanggan(db, pelanggan)
+
+@router.put("/pelanggan/{id}", response_model=PelangganSchema)
+async def update_pelanggan(id: int, updated_pelanggan: PelangganSchema, db: Session = Depends(get_db)):
+    pelanggan = crud.update_pelanggan(db, id, updated_pelanggan)
+    if pelanggan is None:
         raise HTTPException(status_code=404, detail="Pelanggan not found")
-    return Response[PelangganSchema](status="Ok", code="200", message="Success update data", result=pelanggan)
+    return pelanggan
 
-@router.delete("/pelanggan/delete/{pelanggan_id}")
-async def delete_pelanggan_service(pelanggan_id: int, db: Session = Depends(get_db)):
+@router.delete("/pelanggan/{pelanggan_id}", response_model=PelangganSchema)
+async def remove_pelanggan(pelanggan_id: int, db: Session = Depends(get_db)):
     pelanggan = crud.remove_pelanggan(db, pelanggan_id)
-    if not pelanggan:
+    if pelanggan is None:
         raise HTTPException(status_code=404, detail="Pelanggan not found")
-    return Response[PelangganSchema](status="Ok", code="200", message="Success delete data")
+    return pelanggan
 
-@router.post("/pemesanan/create")
-async def create_pemesanan_service(request: Request[PemesananSchema], db: Session = Depends(get_db)):
-    pemesanan = crud.create_pemesanan(db, pemesanan=request.parameter, pelanggan_id=request.parameter.pelanggan_id)
-    return Response[PemesananSchema](status="Ok", code="200", message="Pemesanan created successfully", result=pemesanan)
+#PEMESANAN
+@router.get("/pemesanan/", response_model=PemesananListSchema)
+async def get_all_pemesanan(db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
+    pemesanan = crud.get_all_pemesanan(db, skip, limit)
+    return {"data": pemesanan}
 
-@router.get("/pemesanan/{pemesanan_id}")
-async def get_pemesanan_service(pemesanan_id: int, db: Session = Depends(get_db)):
+@router.get("/pemesanan/{pemesanan_id}", response_model=PemesananSchema)
+async def get_pemesanan(db: Session = Depends(get_db), pemesanan_id: int = Path(..., title="Pemesanan ID")):
     pemesanan = crud.get_pemesanan(db, pemesanan_id)
-    if not pemesanan:
+    if pemesanan is None:
         raise HTTPException(status_code=404, detail="Pemesanan not found")
-    return Response[PemesananSchema](status="Ok", code="200", message="Success fetch data", result=pemesanan)
+    return pemesanan
 
-@router.patch("/pemesanan/update/{pemesanan_id}")
-async def update_pemesanan_service(pemesanan_id: int, request: Request[PemesananSchema], db: Session = Depends(get_db)):
-    pemesanan = crud.update_pemesanan(db, pemesanan_id, deskripsi_sampah=request.parameter.deskripsi_sampah)
-    if not pemesanan:
-        raise HTTPException(status_code=404, detail="Pemesanan not found")
-    return Response[PemesananSchema](status="Ok", code="200", message="Success update data", result=pemesanan)
+@router.post("/pemesanan/{pelanggan_id}", response_model=PemesananSchema)
+async def create_pemesanan(pelanggan_id: int, pemesanan: PemesananSchema, db: Session = Depends(get_db)):
+    return crud.create_pemesanan(db, pemesanan, pelanggan_id)
 
-@router.delete("/pemesanan/delete/{pemesanan_id}")
-async def delete_pemesanan_service(pemesanan_id: int, db: Session = Depends(get_db)):
+@router.put("/pemesanan/{id}", response_model=PemesananSchema)
+async def update_pemesanan(id: int, updated_pemesanan: PemesananSchema, db: Session = Depends(get_db)):
+    pemesanan = crud.update_pemesanan(db, id, updated_pemesanan)
+    if pemesanan is None:
+        raise HTTPException(status_code=404, detail="Pelanggan not found")
+    return pemesanan
+
+@router.delete("/pemesanan/{pemesanan_id}", response_model=PemesananSchema)
+async def remove_pemesanan(pemesanan_id: int, db: Session = Depends(get_db)):
     pemesanan = crud.remove_pemesanan(db, pemesanan_id)
-    if not pemesanan:
+    if pemesanan is None:
         raise HTTPException(status_code=404, detail="Pemesanan not found")
-    return Response[PemesananSchema](status="Ok", code="200", message="Success delete data")
+    return pemesanan

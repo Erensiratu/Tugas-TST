@@ -17,7 +17,6 @@ class Pemesanan(Base):
     __tablename__ = "pemesanan"
 
     id = Column(Integer, primary_key=True, index=True)
-    tanggal_pemesanan = Column(DateTime, default=datetime.utcnow)
     deskripsi_sampah = Column(String)
     status = Column(String, default="Pending")
     pelanggan_id = Column(Integer, ForeignKey("pelanggan.id"))
