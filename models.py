@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from config import Base
-from datetime import datetime
 
 class Pelanggan(Base):
     __tablename__ = "pelanggan"
