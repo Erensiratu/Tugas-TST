@@ -6,12 +6,13 @@ ADD main.py .
 WORKDIR /recyco
 
 # Copy requirement.txt into working directory 
-COPY ./requirements.txt ./
+COPY ./requirements.txt /recyco/requirements.txt
 
 # Install all the dependency
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /recyco/requirements.txt
 
 # Copy code into working directory
-COPY . .
+COPY . /recyco
+
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
