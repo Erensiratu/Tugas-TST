@@ -2,11 +2,10 @@ from sqlalchemy.orm import Session
 from ..models import Pelanggan, Pemesanan
 from app.schema import PelangganSchema, PemesananSchema, PelangganListSchema, PemesananListSchema
 from app.configdb import engine
-from .. import oauth2
-from fastapi import Depends
+
 
 # Operasi CRUD untuk Pelanggan
-def get_all_pelanggan(db: Session, skip: int = 0, limit: int = 100, current_user: int = Depends(oauth2.get_current_user)):
+def get_all_pelanggan(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Pelanggan).offset(skip).limit(limit).all()
 
 def get_pelanggan(db: Session, id: int):
